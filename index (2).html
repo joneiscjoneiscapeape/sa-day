@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Системный аналитик · Интерактивный тренажёр</title>
+  <style>
+    :root {
+      --bg-base: #0b0c10;
+      --glass: rgba(18, 22, 28, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --ink: #e5e9f0;
+      --ink-soft: #9ca3af;
+      --accent: #6d8cff;
+      --accent-glow: rgba(109, 140, 255, 0.18);
+      --ok: #34d399;
+      --ok-bg: rgba(52, 211, 153, 0.08);
+      --bad: #f87171;
+      --bad-bg: rgba(248, 113, 113, 0.08);
+      --radius-sm: 14px;
+      --radius-lg: 24px;
+      --shadow-card: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg-base);
+      background-image: radial-gradient(ellipse at 40% 20%, #1e293b 0%, #0b0c10 70%);
+      font-family: var(--font-sans);
+      color: var(--ink);
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 760px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.8rem;
+      padding-bottom: 3rem;
+    }
+
+    header {
+      position: sticky;
+      top: 1.2rem;
+      z-index: 10;
+      background: rgba(15, 18, 25, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 80px;
+      padding: 0.8rem 1.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.6);
+    }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--ink-soft);
+    }
+    .meta strong {
+      color: white;
+      font-weight: 600;
+    }
+    .score-badge {
+      background: rgba(255,255,255,0.06);
+      padding: 0.3rem 1rem;
+      border-radius: 40px;
+      font-weight: 600;
+    }
+
+    .bar {
+      height: 6px;
+      width: 100%;
+      background: rgba(255,255,255,0.08);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .bar>span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #6d8cff, #a78bfa);
+      border-radius: 10px;
+      box-shadow: 0 0 10px var(--accent-glow);
+      transition: width 0.4s cubic-bezier(0.2, 0.9, 0.4, 1);
+    }
+
+    .card {
+      background: var(--glass);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 2rem 2.2rem;
+      box-shadow: var(--shadow-card);
+    }
+
+    .step-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1.8px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 0.7rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .step-label::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--accent);
+    }
+
+    h1 {
+      font-size: 1.9rem;
+      font-weight: 650;
+      line-height: 1.25;
+      margin-bottom: 1.6rem;
+      background: linear-gradient(to right, #f0f4ff, #cbd5ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .theory p {
+      margin-bottom: 1rem;
+      color: #cdd5e0;
+    }
+    .example {
+      background: rgba(255,255,255,0.03);
+      border-left: 3px solid var(--accent);
+      padding: 1.2rem 1.5rem;
+      border-radius: 0 12px 12px 0;
+      margin: 1.5rem 0 0.5rem;
+      color: #b9c2d4;
+    }
+    .example b {
+      color: white;
+      font-weight: 600;
+    }
+
+    .question {
+      margin-top: 2.2rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding-top: 2rem;
+    }
+    .question h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+    .opt {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--ink);
+      padding: 1rem 1.4rem;
+      border-radius: var(--radius-sm);
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+      backdrop-filter: blur(5px);
+    }
+    .opt:hover:not(:disabled) {
+      background: rgba(109,140,255,0.12);
+      border-color: rgba(109,140,255,0.4);
+      transform: translateX(4px);
+    }
+    .opt.correct {
+      background: var(--ok-bg);
+      border-color: var(--ok);
+      color: #bbf7d0;
+    }
+    .opt.wrong {
+      background: var(--bad-bg);
+      border-color: var(--bad);
+      color: #fecaca;
+    }
+    .mark {
+      font-weight: 700;
+      margin-left: 6px;
+    }
+    .opt.correct .mark { color: var(--ok); }
+    .opt.wrong .mark { color: var(--bad); }
+
+    .feedback {
+      margin-top: 1.5rem;
+      padding: 1rem 1.4rem;
+      border-radius: 14px;
+      font-size: 0.95rem;
+      display: none;
+    }
+    .feedback.show { display: block; }
+    .feedback.ok { background: var(--ok-bg); color: #a7f0d0; border: 1px solid rgba(52,211,153,0.3); }
+    .feedback.bad { background: var(--bad-bg); color: #fecaca; border: 1px solid rgba(248,113,113,0.3); }
+    .verdict { font-weight: 700; display: block; margin-bottom: 0.3rem; }
+
+    .actions {
+      margin-top: 2rem;
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+    }
+    .btn {
+      background: white;
+      border: none;
+      color: #0b0c10;
+      font-weight: 650;
+      padding: 0.8rem 2rem;
+      border-radius: 40px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      background: linear-gradient(135deg, #e0e7ff, #c4b5fd);
+      box-shadow: 0 6px 18px rgba(109,140,255,0.3);
+      transition: 0.2s;
+    }
+    .btn:disabled {
+      opacity: 0.4;
+      box-shadow: none;
+      cursor: not-allowed;
+      filter: grayscale(0.5);
+    }
+    .btn.ghost {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #d1d5db;
+      box-shadow: none;
+    }
+    .btn.ghost:hover:not(:disabled) {
+      background: rgba(255,255,255,0.08);
+      color: white;
+    }
+
+    .final {
+      text-align: center;
+    }
+    .final .score {
+      font-size: 4rem;
+      font-weight: 700;
+      background: linear-gradient(to right, #a5b4fc, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0.5rem 0;
+    }
+    .final .cta {
+      margin-top: 2rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    a.btn {
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    @media (max-width: 550px) {
+      body { padding: 0.8rem; }
+      .card { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="meta">
+      <span>📋 Этап <strong id="cur">1</strong> / <strong id="total">10</strong></span>
+      <span class="score-badge">⭐ <strong id="score">0</strong> баллов</span>
+    </div>
+    <div class="bar"><span id="progress"></span></div>
+  </header>
+  <main id="app"></main>
+</div>
+
+<script>
+  (function() {
+    const STAGES = [
+      {
+        title:"Пришёл заказчик и первичный запрос",
+        theory:[
+          "Всё начинается не с ТЗ, а с боли, сказанной обычным языком. Заказчик описывает не решение, а неудобство — и часто сразу предлагает «как надо сделать», хотя сам не знает как.",
+          "Первая задача аналитика — не хвататься за проектирование, а зафиксировать проблему: кому, что и почему мешает. Решение придёт позже; сначала нужно понять, что вообще болит."
+        ],
+        example:"HR-директор говорит: «Люди шлют заявки на отпуск в почте и на бумажках, кадровик всё теряет, никто не помнит, сколько дней осталось. Хочу, чтобы было в одном месте и по кнопке». Аналитик записывает это как <b>проблему</b> («ручной учёт отпусков теряется»), а не как готовое ТЗ.",
+        question:"Заказчик сказал: «Сделайте кнопку, чтобы всё было в одном месте». Что правильнее сделать в первую очередь?",
+        options:[
+          "Разобраться, в чём проблема и её причина, а выбор решения оставить на потом",
+          "Сразу предложить решение — набросать ту самую кнопку и экран",
+          "Дословно записать в требования: «нужна кнопка, всё в одном месте»",
+          "Прикинуть сроки и стоимость разработки этой кнопки"
+        ],
+        answer:0,
+        explain:"«Кнопка» и «в одном месте» — это желаемое решение на языке заказчика, а не требование. Записать дословно — значит зафиксировать чужую догадку о решении; оценивать сроки или рисовать экран рано, пока не ясна сама проблема."
+      },
+      {
+        title:"Сбор и уточнение требований",
+        theory:[
+          "У системы всегда несколько заинтересованных сторон (стейкхолдеров), и у каждого своя правда. Собрать требования — значит выявить их у всех через интервью, наблюдение и анализ документов.",
+          "Параллельно аналитик снимает неоднозначности. Слова «удобно», «быстро», «автоматически» каждый понимает по-своему — их превращают в конкретное и измеримое."
+        ],
+        example:"Аналитик опрашивает всех: <b>сотрудник</b> хочет видеть остаток дней, <b>руководитель</b> — быстро одобрять, <b>кадровик</b> — выгрузку в 1С. И уточняет: «заявка одобряется сама или нужен руководитель?» — нужен; «а если дней не хватает?» — подачу блокируем.",
+        question:"Заказчик сказал: «Пусть заявка обрабатывается быстро». Как снять неоднозначность?",
+        options:[
+          "Оставить «быстро» как есть — на этапе разработки разберутся",
+          "Записать в требования «система работает быстро» — звучит строго",
+          "Заложить максимально возможную скорость на всякий случай",
+          "Уточнить у заказчика: «быстро» — это за сколько времени и для кого критично"
+        ],
+        answer:3,
+        explain:"«Быстро» непроверяемо. Уточнение превращает пожелание в измеримый критерий («руководитель видит заявку в течение 1 минуты»), который можно однозначно проверить на приёмке."
+      },
+      {
+        title:"Функциональные и нефункциональные требования",
+        theory:[
+          "Требования делят на два вида. Функциональные (ФТ) — ЧТО система делает. Нефункциональные (НФТ) — НАСКОЛЬКО хорошо она это делает: скорость, надёжность, безопасность.",
+          "Новички помнят про ФТ и забывают про НФТ — а именно из-за них система потом тормозит или падает под нагрузкой."
+        ],
+        example:"ФТ портала: подать заявку, одобрить, показать остаток дней. НФТ: отклик <b>&lt;2 c</b>, доступность <b>99,5%</b>, до <b>500</b> пользователей в пик.",
+        question:"«Система должна выдерживать 500 одновременных пользователей». Это какое требование?",
+        options:[
+          "Функциональное — «выдерживать пользователей» звучит как действие",
+          "Функциональное — раз упомянуты пользователи, значит про их работу",
+          "Нефункциональное — это характеристика нагрузки, а не действие",
+          "Это ограничение проекта, а не требование к системе"
+        ],
+        answer:2,
+        explain:"Здесь нет действия — есть условие по нагрузке. Это классическое НФТ (производительность)."
+      },
+      {
+        title:"Моделирование сценариев: user story и use case",
+        theory:[
+          "User story коротко фиксирует ценность: «Как <роль>, я хочу <действие>, чтобы <польза>».",
+          "Use case разворачивает функцию в подробный сценарий с шагами и альтернативами."
+        ],
+        example:"User story: «Как сотрудник, я хочу подать заявку онлайн, чтобы не носить бумаги». Use case: предусловие — авторизован; шаги — выбрал даты → система проверила остаток → отправила руководителю.",
+        question:"Чем user story отличается от use case?",
+        options:[
+          "User story — то же самое, что use case, просто термин из Agile",
+          "User story — короткая формулировка ценности; use case — детальный сценарий",
+          "User story — это полный сценарий, а use case — короткая заметка",
+          "User story нужна дизайнеру, а use case — только тестировщику"
+        ],
+        answer:1,
+        explain:"User story фиксирует кому и зачем, use case — как именно это работает шаг за шагом."
+      },
+      {
+        title:"Проектирование модели данных",
+        theory:[
+          "Аналитик проектирует модель данных: сущности, атрибуты и связи. Ошибка в модели данных дороже всех."
+        ],
+        example:"Сущности: <b>Сотрудник</b>, <b>Заявка</b>. Связь: один Сотрудник — много Заявок.",
+        question:"Один сотрудник может подать несколько заявок, но каждая заявка принадлежит ровно одному сотруднику. Какая это связь?",
+        options:[
+          "Один-к-одному (1:1)",
+          "Многие-ко-многим (N:M)",
+          "Кратность зависит от базы данных",
+          "Один-ко-многим (1:N)"
+        ],
+        answer:3,
+        explain:"С одной стороны один сотрудник, с другой — много его заявок. Это «один-ко-многим»."
+      },
+      {
+        title:"Моделирование процесса и состояний",
+        theory:[
+          "Аналитик описывает жизненный цикл объекта: какие статусы он проходит и по каким правилам."
+        ],
+        example:"Состояния Заявки: <b>Черновик → На согласовании → Одобрена / Отклонена</b>.",
+        question:"Зачем аналитику описывать статусы заявки и переходы между ними?",
+        options:[
+          "Чтобы задать однозначные правила переходов",
+          "Достаточно нарисовать процесс-поток",
+          "Статусы определит разработчик",
+          "Это нужно только тестировщику"
+        ],
+        answer:0,
+        explain:"Модель состояний закрывает неоднозначности: можно ли одобрить отменённую заявку?"
+      },
+      {
+        title:"Выбор интеграций",
+        theory:[
+          "Аналитик решает, как системы общаются: синхронно (REST) или асинхронно (очереди)."
+        ],
+        example:"Остаток дней из 1С — синхронно. Выгрузка в 1С — асинхронно.",
+        question:"Сотруднику нужно СРАЗУ увидеть остаток дней из 1С. Какой способ интеграции?",
+        options:[
+          "Асинхронно через очередь",
+          "Асинхронно, показав кэш",
+          "Синхронный запрос-ответ (REST)",
+          "Не интегрироваться, вводить вручную"
+        ],
+        answer:2,
+        explain:"Пользователь ждёт ответ на экране — нужен синхронный запрос."
+      },
+      {
+        title:"Проектирование API и контракта",
+        theory:[
+          "Аналитик проектирует контракт API: методы, поля, ошибки. Это позволяет командам работать параллельно."
+        ],
+        example:"Контракт «получить остаток»: запрос с id → ответ с числом дней и датой.",
+        question:"Зачем аналитик заранее описывает контракт API?",
+        options:[
+          "Контракт нужен только для внешних систем",
+          "Чтобы стороны работали параллельно, без разночтений",
+          "Чтобы фронтенд подождал бэкенд",
+          "Это формальность, формат всё равно поменяется"
+        ],
+        answer:1,
+        explain:"Контракт — зафиксированная договорённость, позволяющая работать одновременно."
+      },
+      {
+        title:"Крайние случаи, ограничения и согласование scope",
+        theory:[
+          "Аналитик продумывает крайние случаи (edge cases) и фиксирует границы проекта (scope)."
+        ],
+        example:"Крайний случай: руководитель в отпуске — кто одобряет? Scope: в релиз идут Must и Should.",
+        question:"Что из перечисленного — крайний случай (edge case)?",
+        options:[
+          "Руководитель, который должен одобрять, сам находится в отпуске",
+          "Сотрудник подал заявку, руководитель её одобрил",
+          "Сотрудник открыл портал с телефона",
+          "Кадровик выгрузил список отпусков"
+        ],
+        answer:0,
+        explain:"«Одобряющий недоступен» ломает основной сценарий и требует правила эскалации."
+      },
+      {
+        title:"ТЗ и передача в разработку",
+        theory:[
+          "Итог — техническое задание: однозначное, полное, проверяемое. Аналитик передаёт его команде и остаётся на связи."
+        ],
+        example:"ТЗ собирает роли, ФТ/НФТ, модель данных, интеграции и критерии приёмки.",
+        question:"Какой пункт ТЗ отвечает на вопрос «как понять, что функция сделана правильно»?",
+        options:[
+          "Назначение системы",
+          "Глоссарий терминов",
+          "Критерии приёмки",
+          "Список ролей пользователей"
+        ],
+        answer:2,
+        explain:"Критерии приёмки — проверяемые условия готовности."
+      }
+    ];
+
+    const CTA_LINK = "https://t.me/Hub_Launch";
+    const CTA_TEXT = "Написать нам в Telegram";
+    const ABOUT_TITLE = "Launch Hub";
+    const ABOUT_TEXT  = "Мы обучаем этой специальности с нуля: разбираем реальные проекты, "
+                      + "тренируем на живых кейсах вроде этого и доводим до собеседования. "
+                      + "Если профессия показалась интересной — напишите нам в Telegram, расскажем подробнее.";
+
+    const app = document.getElementById("app");
+    const elCur = document.getElementById("cur");
+    const elTotal = document.getElementById("total");
+    const elScore = document.getElementById("score");
+    const elBar = document.getElementById("progress");
+
+    let index = 0, score = 0, answered = false;
+    elTotal.textContent = STAGES.length;
+
+    function updateHeader() {
+      elBar.style.width = (index / STAGES.length * 100) + "%";
+      elCur.textContent = index + 1;
+      elScore.textContent = score;
+    }
+
+    function theoryBlock(s) {
+      return `<div class="theory">${s.theory.map(p => "<p>" + p + "</p>").join("")}<p class="example">${s.example}</p></div>`;
+    }
+
+    function renderStage() {
+      answered = false;
+      updateHeader();
+      const s = STAGES[index];
+      renderQuiz(s);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderQuiz(s) {
+      app.innerHTML = `
+        <section class="card">
+          <div class="step-label">Этап ${index+1}</div>
+          <h1>${s.title}</h1>
+          ${theoryBlock(s)}
+          <div class="question">
+            <h2>${s.question}</h2>
+            <div class="options" id="options"></div>
+            <div class="feedback" id="feedback"></div>
+          </div>
+          <div class="actions">
+            <button class="btn" id="next" disabled>${index===STAGES.length-1?"Завершить":"Далее"}</button>
+          </div>
+        </section>`;
+      const box = document.getElementById("options");
+      s.options.forEach((text, i) => {
+        const b = document.createElement("button");
+        b.className = "opt";
+        b.innerHTML = text;
+        b.onclick = () => chooseQuiz(i, b, s);
+        box.appendChild(b);
+      });
+      document.getElementById("next").onclick = goNext;
+    }
+
+    function chooseQuiz(i, btn, s) {
+      if (answered) return;
+      answered = true;
+      const buttons = [...document.querySelectorAll(".opt")];
+      buttons.forEach(b => b.disabled = true);
+      buttons[s.answer].classList.add("correct");
+      buttons[s.answer].insertAdjacentHTML("beforeend", ' <span class="mark">— верно</span>');
+      const fb = document.getElementById("feedback");
+      if (i === s.answer) {
+        score++;
+        elScore.textContent = score;
+        fb.className = "feedback ok show";
+        fb.innerHTML = '<span class="verdict">Верно</span>' + s.explain;
+      } else {
+        btn.classList.add("wrong");
+        btn.insertAdjacentHTML("beforeend", ' <span class="mark">— ваш ответ</span>');
+        fb.className = "feedback bad show";
+        fb.innerHTML = '<span class="verdict">Не совсем</span>' + s.explain;
+      }
+      document.getElementById("next").disabled = false;
+    }
+
+    function goNext() {
+      if (index < STAGES.length - 1) { index++; renderStage(); }
+      else renderFinal();
+    }
+
+    function renderFinal() {
+      elBar.style.width = "100%";
+      elCur.textContent = STAGES.length;
+      app.innerHTML = `
+        <section class="card final">
+          <div class="step-label">Готово</div>
+          <div class="score">${score}<small> / ${STAGES.length}</small></div>
+          <p style="color:#cdd5e0; margin:1.5rem 0; text-align:left;">
+            Вы прошли путь одного проекта — от сырой «хотелки» заказчика до готового ТЗ.
+            Сбор и уточнение требований, ФТ и НФТ, моделирование сценариев,
+            проектирование данных, процессов, интеграций и API, крайние случаи и согласование
+            scope — <strong>это и есть работа системного аналитика</strong>.
+          </p>
+          <div style="border-top:1px solid rgba(255,255,255,0.1); padding-top:1.5rem; margin-top:1.5rem; text-align:left;">
+            <h3 style="color:white;">${ABOUT_TITLE}</h3>
+            <p style="color:var(--ink-soft);">${ABOUT_TEXT}</p>
+          </div>
+          <div class="cta">
+            <a class="btn" href="${CTA_LINK}" target="_blank" rel="noopener">${CTA_TEXT}</a>
+            <button class="btn ghost" id="restart">Пройти заново</button>
+          </div>
+        </section>`;
+      document.getElementById("restart").onclick = restart;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function restart() { index = 0; score = 0; renderStage(); }
+
+    renderStage();
+  })();
+</script>
+</body>
+</html>
